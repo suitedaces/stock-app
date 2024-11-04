@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StockData } from '@/types';
+import { StockData } from '@/lib/types';
 
 export const INDICES = ['^GSPC', '^DJI', '^IXIC'] as const;
 

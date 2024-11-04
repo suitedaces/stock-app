@@ -8,6 +8,23 @@ interface SearchResult {
   type: string;
 }
 
+type YahooSearchQuote = {
+  exchange?: string;
+  shortname?: string;
+  longname?: string;
+  quoteType?: string;
+  symbol: string;
+  index?: string;
+  score?: number;
+  typeDisp?: string;
+  longtype?: string;
+  isYahooFinance?: boolean;
+  sector?: string;
+  industry?: string;
+  dispSecIndFlag?: boolean;
+  name?: string;
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -26,16 +43,15 @@ export async function GET(request: Request) {
     });
 
     // Transform and filter the results
-    const searchResults: SearchResult[] = results.quotes
+    const searchResults: SearchResult[] = (results.quotes as YahooSearchQuote[])
       .filter(quote => 
-        // Only filter by EQUITY type, allow all exchanges
-        quote.quoteType === 'EQUITY'
+        quote.typeDisp === 'Equity' || quote.quoteType === 'EQUITY'
       )
-      .map((quote: any) => ({
+      .map(quote => ({
         symbol: quote.symbol,
-        name: quote.shortname || quote.longname || '',
+        name: quote.shortname || quote.longname || quote.name || '',
         exchange: quote.exchange || '',
-        type: quote.quoteType,
+        type: quote.typeDisp || quote.quoteType || 'EQUITY',
       }))
       // Sort to prioritize US exchanges
       .sort((a, b) => {

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { useWatchList } from '@/contexts/WatchListContext';
-import { SearchResult } from '@/types/stock';
+import { SearchResult } from '@/lib/types';
 import { getTradingViewUrl } from '@/lib/utils';
 import { ScrollArea } from "@/components/ui/scroll-area"
 
