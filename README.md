@@ -1,16 +1,13 @@
 # Fintool - Simple Stock Tracker
 
 **tl;dr**: Stock tracker web app for tracking and screening stocks
-
-![1D820E3F-0D6E-4D9C-AA2D-E9070A0806B9_1_105_c](https://github.com/user-attachments/assets/e97d277c-c347-4c66-86a3-10d23fbe7837)
-
 - Add/remove stocks from watchlist
 - Real-time(ish) prices + daily charts
 - Stock search by company/ticker
 - Interactive price charts
 - Zero auth, instant, free access - stores everything locally
 - Built for speed-to-market
-
+![0EBCE04E-DCB5-4C3F-A6A3-CD0101DCD035_1_102_o](https://github.com/user-attachments/assets/f1599d2e-063f-43ab-82ab-ac2d55d365a6)
 ### Demo 
 
 ### 1. Where do I store the watch-list?
