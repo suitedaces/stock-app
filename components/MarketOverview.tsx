@@ -4,13 +4,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TrendingUp, TrendingDown } from "lucide-react"
 import { useMarketData, INDICES } from '@/hooks/useMarketData';
-import { getTradingViewUrl, formatPrice } from '@/lib/utils';
-
-const INDEX_NAMES = {
-  '^GSPC': 'S&P 500',
-  '^DJI': 'Dow Jones',
-  '^IXIC': 'NASDAQ'
-} as const;
+import { formatPrice, INDEX_MAP, getEncodedSymbol } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function MarketOverview() {
   const { data, error, isLoading } = useMarketData();
@@ -46,16 +41,14 @@ export default function MarketOverview() {
       {data.map((index) => (
         <Card key={index.symbol}>
           <CardContent className="p-6">
-            <a
-              href={getTradingViewUrl(index.symbol)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/stock/${getEncodedSymbol(index.symbol)}`}
               className="hover:underline"
             >
               <h3 className="text-lg font-semibold">
-                {INDEX_NAMES[index.symbol as keyof typeof INDEX_NAMES]}
+                {INDEX_MAP[index.symbol]}
               </h3>
-            </a>
+            </Link>
             <p className="text-2xl font-bold mt-2">
               {formatPrice(index.price)}
             </p>
@@ -66,12 +59,8 @@ export default function MarketOverview() {
                 <TrendingUp className="h-4 w-4 mr-1" /> : 
                 <TrendingDown className="h-4 w-4 mr-1" />
               }
-              <span>
-                {Math.abs(index.change).toFixed(2)}
-              </span>
-              <span className="ml-2">
-                ({index.changePercent.toFixed(2)}%)
-              </span>
+              <span>{Math.abs(index.change).toFixed(2)}</span>
+              <span className="ml-2">({index.changePercent.toFixed(2)}%)</span>
             </p>
           </CardContent>
         </Card>

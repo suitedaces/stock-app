@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { useWatchList } from '@/contexts/WatchListContext';
 import { SearchResult } from '@/lib/types';
-import { getTradingViewUrl } from '@/lib/utils';
 import { ScrollArea } from "@/components/ui/scroll-area"
+import Link from 'next/link';
 
 export default function StockSearch() {
   const [query, setQuery] = useState('');
@@ -91,14 +91,12 @@ export default function StockSearch() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <a
-                        href={getTradingViewUrl(result.symbol)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        href={`/stock/${result.symbol}`}
                         className="font-bold hover:underline truncate"
                       >
                         {result.symbol}
-                      </a>
+                      </Link>
                       <span className="text-muted-foreground truncate">
                         {result.name}
                       </span>

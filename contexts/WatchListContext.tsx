@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { StockData, CACHE_DURATION, CACHE_KEYS } from '@/lib/types';
+import { StockData } from '@/lib/types';
+import { getCachedData, setCachedData, CACHE_KEYS } from '@/lib/cache';
 
 interface WatchListContextType {
   watchList: string[];
@@ -16,67 +16,82 @@ interface WatchListContextType {
 const WatchListContext = createContext<WatchListContextType | undefined>(undefined);
 
 export function WatchListProvider({ children }: { children: React.ReactNode }) {
-  const [watchList, setWatchList] = useLocalStorage<string[]>(CACHE_KEYS.WATCHLIST, []);
+  const [watchList, setWatchList] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(CACHE_KEYS.WATCHLIST);
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+  
   const [stocks, setStocks] = useState<StockData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStockData = useCallback(async () => {
-    if (watchList.length === 0) {
+  const fetchStockData = async (symbols: string[]) => {
+    if (symbols.length === 0) {
       setStocks([]);
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const response = await fetch(`/api/stocks?symbols=${watchList.join(',')}`);
+      setIsLoading(true);
+      const response = await fetch(`/api/stocks?symbols=${symbols.join(',')}`);
       if (!response.ok) throw new Error('Failed to fetch stock data');
+      const data = await response.json();
       
-      const data: StockData[] = await response.json();
+      // Cache the new data with the current symbols
+      setCachedData(CACHE_KEYS.WATCHLIST_DATA, {
+        symbols,
+        data
+      });
       setStocks(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch stock data');
+      setError(err instanceof Error ? err.message : 'Failed to load stock data');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const addToWatchList = useCallback(async (symbol: string) => {
+    if (!watchList.includes(symbol)) {
+      const newWatchList = [...watchList, symbol];
+      setWatchList(newWatchList);
+      localStorage.setItem(CACHE_KEYS.WATCHLIST, JSON.stringify(newWatchList));
+      setIsLoading(true);
+      await fetchStockData(newWatchList);
+    }
+  }, [watchList]);
+
+  const removeFromWatchList = useCallback((symbol: string) => {
+    const newWatchList = watchList.filter(s => s !== symbol);
+    setWatchList(newWatchList);
+    localStorage.setItem(CACHE_KEYS.WATCHLIST, JSON.stringify(newWatchList));
+    fetchStockData(newWatchList);
   }, [watchList]);
 
   useEffect(() => {
-    fetchStockData();
-    const interval = setInterval(fetchStockData, CACHE_DURATION);
-    return () => clearInterval(interval);
-  }, [fetchStockData]);
-
-  const addToWatchList = async (symbol: string) => {
-    if (!watchList.includes(symbol)) {
-      setIsLoading(true);
-      setError(null);
+    const loadData = async () => {
+      const cachedData = getCachedData<{ symbols: string[], data: StockData[] }>(CACHE_KEYS.WATCHLIST_DATA);
       
-      try {
-        const response = await fetch(`/api/stocks?symbols=${symbol}`);
-        if (!response.ok) throw new Error('Failed to fetch stock data');
-        
-        const data: StockData[] = await response.json();
-        if (data.length === 0) throw new Error(`Invalid stock symbol: ${symbol}`);
-        
-        setStocks(prev => [...prev, data[0]]);
-        setWatchList(prev => [...prev, symbol]);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : `Failed to add ${symbol} to watchlist`;
-        setError(message);
-        throw new Error(message);
-      } finally {
+      if (cachedData && JSON.stringify(cachedData.symbols) === JSON.stringify(watchList)) {
+        setStocks(cachedData.data);
         setIsLoading(false);
+      } else {
+        await fetchStockData(watchList);
       }
-    }
-  };
+    };
 
-  const removeFromWatchList = (symbol: string) => {
-    setWatchList(prev => prev.filter(s => s !== symbol));
-    setStocks(prev => prev.filter(s => s.symbol !== symbol));
-  };
+    loadData();
+    
+    // Set up polling interval
+    const interval = setInterval(() => {
+      fetchStockData(watchList);
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [watchList]);
 
   return (
     <WatchListContext.Provider
@@ -86,7 +101,7 @@ export function WatchListProvider({ children }: { children: React.ReactNode }) {
         addToWatchList,
         removeFromWatchList,
         isLoading,
-        error
+        error,
       }}
     >
       {children}
@@ -94,10 +109,10 @@ export function WatchListProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useWatchList = () => {
+export function useWatchList() {
   const context = useContext(WatchListContext);
   if (context === undefined) {
     throw new Error('useWatchList must be used within a WatchListProvider');
   }
   return context;
-}; 
+} 

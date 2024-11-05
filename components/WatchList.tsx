@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Trash2, Info } from "lucide-react"
 import { useWatchList } from '@/contexts/WatchListContext';
-import { getTradingViewUrl } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Link from 'next/link';
 
 export default function WatchList() {
   const { stocks, removeFromWatchList, isLoading, error } = useWatchList();
@@ -67,14 +67,12 @@ export default function WatchList() {
                   className="flex justify-between items-center p-4 hover:bg-muted rounded-md transition-colors"
                 >
                   <div>
-                    <a
-                      href={getTradingViewUrl(stock.symbol)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      href={`/stock/${stock.symbol}`}
                       className="text-xl font-bold hover:underline"
                     >
                       {stock.symbol}
-                    </a>
+                    </Link>
                     <div className={`text-lg ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       ${stock.price.toFixed(2)}
                       <span className="ml-2">
