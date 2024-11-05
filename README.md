@@ -7,8 +7,9 @@
 - Interactive price charts
 - Zero auth, instant, free access - stores everything locally
 - Built for speed-to-market
-![0EBCE04E-DCB5-4C3F-A6A3-CD0101DCD035_1_102_o](https://github.com/user-attachments/assets/f1599d2e-063f-43ab-82ab-ac2d55d365a6)
-### Demo 
+
+### Demo
+https://github.com/user-attachments/assets/13a16c40-155c-4eb7-8ee2-f666673578e1 
 
 ### 1. Where do I store the watch-list?
 Browser's localStorage for v1. Reasons:
