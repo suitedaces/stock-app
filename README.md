@@ -1,6 +1,8 @@
 # Fintool - Simple Stock Tracker
 
 **tl;dr**: Stock tracker web app for tracking and screening stocks
+
+### Features
 - Add/remove stocks from watchlist
 - Real-time(ish) prices + daily charts
 - Stock search by company/ticker
@@ -10,6 +12,11 @@
 
 ### Demo
 https://github.com/user-attachments/assets/13a16c40-155c-4eb7-8ee2-f666673578e1 
+
+### Limitations
+- No rate limiting
+- 2k-3k concurrent users before rate limit hits
+- Unofficial Yahoo Finance API (lol)
 
 ### 1. Where do I store the watch-list?
 Browser's localStorage for v1. Reasons:
@@ -42,19 +49,19 @@ Can add simple rate-limiting middleware to this, via Upstash Redis, or manually 
 
 ### 4. What does the backend API looks like?
 3 clean endpoints:
-```typescript
-// Search stocks
+
+1. Search for stocks
 GET /api/search?q=<query>
 => [{symbol, name, exchange}]
 
-// Get current prices
+2. Get current prices
 GET /api/stocks?symbols=AAPL,MSFT
 => [{symbol, price, change, changePercent}]
 
-// Get chart data
+3. Get historical prices for charts
 GET /api/stocks/history?symbol=AAPL&range=1d
 => [{time, price}]
-```
+
 If we add auth, we would add OAUTH 2.0 via Google using a provider-agnostic library like Clerk or Supabase Auth so we can add more providers later.
 
 ### 5. What tech stack would work best?
@@ -64,3 +71,4 @@ For fastest v1:
 - **Tailwind/shadcn** 
 - **Yahoo Finance API** 
 - **TypeScript** 
+- **Vercel**
